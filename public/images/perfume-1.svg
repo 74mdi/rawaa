@@ -1,0 +1,14 @@
+<svg width="600" height="800" viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a26"/>
+      <stop offset="100%" style="stop-color:#0a0a0f"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#pg1)"/>
+  <circle cx="300" cy="300" r="100" fill="none" stroke="#c9a84c" stroke-width="2" opacity="0.3"/>
+  <circle cx="300" cy="300" r="60" fill="none" stroke="#c9a84c" stroke-width="1" opacity="0.2"/>
+  <text x="300" y="450" text-anchor="middle" fill="#c9a84c" font-family="serif" font-size="28" font-weight="bold">Parfum</text>
+  <text x="300" y="480" text-anchor="middle" fill="#7a6230" font-family="serif" font-size="14">Eau de Parfum</text>
+  <line x1="200" y1="550" x2="400" y2="550" stroke="#2a2a3d" stroke-width="1"/>
+</svg>
