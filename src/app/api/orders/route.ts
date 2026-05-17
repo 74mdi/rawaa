@@ -61,11 +61,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: firstError.message }, { status: 400 })
   }
 
-  const { customerName, phone, city, address, notes, items, discountCode } = data
+  const { customerName, phone, city, address, notes, items } = parsed.data
+  const discountCode = data.discountCode as string | undefined
 
   try {
     const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const productIds = items.map(i => i.productId)
+      const productIds = items.map((i: { productId: string }) => i.productId)
       const products = await tx.product.findMany({
         where: { id: { in: productIds } },
         select: { id: true, stock: true, price: true, name: true },
