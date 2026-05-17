@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     const parsed = loginSchema.safeParse({ email: data.email, password: data.password })
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
     }
 
     const { email, password } = parsed.data
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       newPassword: data.newPassword,
     })
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
     }
 
     const admin = await prisma.admin.findUnique({ where: { email: payload.email } })

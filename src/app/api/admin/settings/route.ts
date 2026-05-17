@@ -34,7 +34,7 @@ export async function PUT(request: NextRequest) {
   const data = await request.json()
   const parsed = storeSettingsSchema.safeParse(data)
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
   await mkdir(path.dirname(SETTINGS_FILE), { recursive: true })
