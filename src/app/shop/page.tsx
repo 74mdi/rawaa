@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { useLang } from '@/lib/LanguageContext'
@@ -18,7 +18,7 @@ const SORTS = [
   { value: 'price_desc', labelFr: 'Prix ↓', labelAr: 'السعر ↓' },
 ]
 
-export default function ShopPage() {
+function ShopContent() {
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
@@ -167,5 +167,13 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-20 text-center">Loading...</div>}>
+      <ShopContent />
+    </Suspense>
   )
 }

@@ -1,10 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { SITE_CONFIG } from '@/lib/constants'
 
-export default function OrderSuccessPage() {
+function OrderContent() {
   const searchParams = useSearchParams()
   const orderNumber = searchParams.get('order')
 
@@ -73,5 +74,13 @@ export default function OrderSuccessPage() {
         </Link>
       </div>
     </div>
+  )
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={<div className="max-w-lg mx-auto px-4 py-20 text-center">Loading...</div>}>
+      <OrderContent />
+    </Suspense>
   )
 }
