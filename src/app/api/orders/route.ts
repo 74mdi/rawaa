@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         where: { id: { in: productIds } },
         select: { id: true, stock: true, price: true, name: true },
       })
-      const productMap = new Map(products.map((p: { id: string }) => [p.id, p]))
+      const productMap = new Map(products.map(p => [p.id, p]))
 
       let total = 0
       const orderItemsData = items.map((item: { productId: string; quantity: number }) => {
