@@ -154,11 +154,28 @@ const LangContext = createContext<{
 }>({ lang: 'fr', t: translations.fr, setLang: () => {}, toggleLang: () => {} })
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>('fr')
+  const [lang, setLangState] = useState<Lang>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('rawaa_lang') as Lang) || 'fr'
+    }
+    return 'fr'
+  })
 
-  const setLang = useCallback((l: Lang) => setLangState(l), [])
+  const setLang = useCallback((l: Lang) => {
+    setLangState(l)
+    localStorage.setItem('rawaa_lang', l)
+    document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr'
+    document.documentElement.lang = l
+  }, [])
+
   const toggleLang = useCallback(() => {
-    setLangState(prev => prev === 'fr' ? 'ar' : 'fr')
+    setLangState(prev => {
+      const next = prev === 'fr' ? 'ar' : 'fr'
+      localStorage.setItem('rawaa_lang', next)
+      document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr'
+      document.documentElement.lang = next
+      return next
+    })
   }, [])
 
   return (

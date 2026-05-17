@@ -64,6 +64,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0a0a0f" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <script dangerouslySetInnerHTML={{
+          __html: `(function(){var l=localStorage.getItem('rawaa_lang');if(l==='ar'){document.documentElement.dir='rtl';document.documentElement.lang='ar'}})();`
+        }} />
       </head>
       <body className={`${playfair.variable} ${dmSans.variable} ${tajawal.variable}`}>
         <Providers>
