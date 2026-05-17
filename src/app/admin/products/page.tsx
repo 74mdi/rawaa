@@ -11,6 +11,7 @@ interface AdminProduct {
   id: string
   name: string
   nameAr: string
+  slug: string
   images: string[]
   category: string
   price: number
