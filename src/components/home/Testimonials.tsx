@@ -1,35 +1,37 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-const testimonials = [
-  {
-    name: 'Fatima Z.',
-    text: 'Parfum magnifique et livraison très rapide. Je recommande!',
-    textAr: 'عطر رائع وتوصيل سريع جداً. أنصح به!',
-    rating: 5,
-  },
-  {
-    name: 'Youssef M.',
-    text: 'La qualité des bijoux est exceptionnelle. Rapport qualité-prix imbattable.',
-    textAr: 'جودة المجوهرات استثنائية. قيمة ممتازة مقابل السعر.',
-    rating: 5,
-  },
-  {
-    name: 'Amina K.',
-    text: 'Service client au top! Ils m\'ont aidée à choisir le parfum parfait.',
-    textAr: 'خدمة العملاء ممتازة! ساعدوني في اختيار العطر المثالي.',
-    rating: 5,
-  },
-]
+interface Testimonial {
+  id: string
+  name: string
+  text: string
+  textAr: string
+  rating: number
+  active: boolean
+}
 
 export function Testimonials() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [current, setCurrent] = useState(0)
 
   useEffect(() => {
+    fetch('/api/testimonials')
+      .then(res => res.json())
+      .then(data => {
+        const active = Array.isArray(data) ? data.filter((t: Testimonial) => t.active) : []
+        setTestimonials(active)
+      })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (testimonials.length === 0) return
     const iv = setInterval(() => setCurrent(c => (c + 1) % testimonials.length), 5000)
     return () => clearInterval(iv)
-  }, [])
+  }, [testimonials.length])
+
+  if (testimonials.length === 0) return null
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-20">
@@ -47,7 +49,7 @@ export function Testimonials() {
             style={{ transform: `translateX(-${current * 100}%)` }}
           >
             {testimonials.map((t, i) => (
-              <div key={i} className="w-full flex-shrink-0 px-4">
+              <div key={t.id} className="w-full flex-shrink-0 px-4">
                 <div className="bg-[var(--bg-secondary)] rounded-2xl p-8 border border-[var(--border)] text-center">
                   <div className="flex justify-center gap-1 mb-4">
                     {Array.from({ length: t.rating }).map((_, s) => (

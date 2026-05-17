@@ -27,4 +27,6 @@ export const SITE_CONFIG = {
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   whatsapp: '+212600000000',
   instagram: '@rawaa.ma',
+  tiktok: '',
+  facebook: '',
 }

@@ -62,3 +62,17 @@ model Admin {
   lastLogin   DateTime?
   lastLoginIp String?
 }
+
+model DiscountCode {
+  id          String    @id @default(cuid())
+  code        String    @unique @db.VarChar(50)
+  type        String    @default("PERCENTAGE") @db.VarChar(20)
+  value       Float
+  minOrder    Float?
+  maxUses     Int?
+  usedCount   Int       @default(0)
+  active      Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

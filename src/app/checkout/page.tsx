@@ -8,7 +8,7 @@ import { useCartStore } from '@/store/cartStore'
 import { formatPrice } from '@/lib/utils'
 import { MOROCCAN_CITIES } from '@/lib/constants'
 import { useLang } from '@/lib/LanguageContext'
-import { calcShipping, calcTotal } from '@/lib/shipping'
+import { calcShipping } from '@/lib/shipping'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -24,10 +24,16 @@ export default function CheckoutPage() {
     notes: '',
   })
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [discountCode, setDiscountCode] = useState('')
+  const [discountInfo, setDiscountInfo] = useState<{ code: string; type: string; value: number; discount: number } | null>(null)
+  const [discountLoading, setDiscountLoading] = useState(false)
+  const [discountError, setDiscountError] = useState('')
 
   const subtotal = total()
-  const shipping = calcShipping(subtotal)
-  const grandTotal = calcTotal(subtotal)
+  const discountAmount = discountInfo?.discount || 0
+  const afterDiscount = subtotal - discountAmount
+  const shipping = calcShipping(afterDiscount)
+  const grandTotal = afterDiscount + shipping
 
   const errors: Record<string, string> = {}
   if (!form.customerName.trim()) errors.customerName = lang === 'fr' ? 'Nom requis' : 'الاسم مطلوب'
@@ -37,6 +43,33 @@ export default function CheckoutPage() {
   if (!form.address.trim()) errors.address = lang === 'fr' ? 'Adresse requise' : 'العنوان مطلوب'
 
   const isValid = Object.keys(errors).length === 0
+
+  const validateDiscount = async () => {
+    if (!discountCode.trim()) return
+    setDiscountLoading(true)
+    setDiscountError('')
+    try {
+      const res = await fetch('/api/discount-codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: discountCode.trim().toUpperCase(), subtotal }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Code invalide')
+      setDiscountInfo({ code: data.code, type: data.type, value: data.value, discount: data.discount })
+    } catch (err) {
+      setDiscountError(err instanceof Error ? err.message : 'Code invalide')
+      setDiscountInfo(null)
+    } finally {
+      setDiscountLoading(false)
+    }
+  }
+
+  const removeDiscount = () => {
+    setDiscountCode('')
+    setDiscountInfo(null)
+    setDiscountError('')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,6 +85,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           ...form,
           items: items.map(i => ({ productId: i.product.id, quantity: i.quantity })),
+          discountCode: discountInfo?.code,
         }),
       })
 
@@ -196,14 +230,14 @@ export default function CheckoutPage() {
             <svg className="inline-block -mt-0.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
             </svg>
-            {t.product.description === 'Description' ? 'Paiement à la livraison uniquement · الدفع عند الاستلام فقط' : 'الدفع عند الاستلام فقط'}
+            {lang === 'fr' ? 'Paiement à la livraison uniquement · الدفع عند الاستلام فقط' : 'الدفع عند الاستلام فقط'}
           </p>
         </form>
 
         <div className="lg:col-span-2">
           <div className="bg-[var(--bg-secondary)] rounded-xl p-6 sticky top-24 border border-[var(--border)]">
             <h3 className="font-display text-lg mb-4">{lang === 'fr' ? 'Votre commande' : 'طلبك'}</h3>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="space-y-4 max-h-64 overflow-y-auto">
               {items.map(item => (
                 <div key={item.product.id} className="flex gap-3">
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[var(--bg-primary)]">
@@ -218,22 +252,60 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-[var(--border)] space-y-2 text-sm">
+            {/* Discount Code */}
+            <div className="mt-4 pt-4 border-t border-[var(--border)]">
+              <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                {lang === 'fr' ? 'Code promo' : 'كود الخصم'}
+              </label>
+              {discountInfo ? (
+                <div className="flex items-center justify-between bg-[var(--success)]/10 rounded-button px-3 py-2">
+                  <span className="text-sm text-[var(--success)] font-mono font-medium">
+                    {discountInfo.code} ({discountInfo.type === 'PERCENTAGE' ? `-${discountInfo.value}%` : `-${discountInfo.value} DH`})
+                  </span>
+                  <button onClick={removeDiscount} className="text-xs text-[var(--error)] hover:underline">
+                    {lang === 'fr' ? 'Retirer' : 'إزالة'}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={discountCode}
+                    onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountError('') }}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); validateDiscount() } }}
+                    className="flex-1 bg-[var(--bg-surface)] border border-[var(--border)] rounded-button px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:border-[var(--gold)]"
+                    placeholder={lang === 'fr' ? 'SOLDE20' : 'SOLDE20'}
+                  />
+                  <button
+                    type="button"
+                    onClick={validateDiscount}
+                    disabled={discountLoading || !discountCode.trim()}
+                    className="px-4 py-2 rounded-button bg-[var(--gold)] text-[var(--bg-primary)] text-sm font-medium hover:opacity-90 disabled:opacity-50"
+                  >
+                    {discountLoading ? '...' : (lang === 'fr' ? 'Appliquer' : 'تطبيق')}
+                  </button>
+                </div>
+              )}
+              {discountError && <p className="text-xs text-[var(--error)] mt-1">{discountError}</p>}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-[var(--text-secondary)]">{lang === 'fr' ? 'Sous-total' : 'المجموع الفرعي'}</span>
                 <span className="font-mono">{formatPrice(subtotal)}</span>
               </div>
+              {discountInfo && (
+                <div className="flex justify-between text-[var(--success)]">
+                  <span>{lang === 'fr' ? 'Réduction' : 'الخصم'}</span>
+                  <span className="font-mono">-{formatPrice(discountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-[var(--text-secondary)]">{lang === 'fr' ? 'Livraison' : 'التوصيل'}</span>
                 <span className={`font-mono ${shipping === 0 ? 'text-[var(--success)]' : ''}`}>
                   {shipping === 0 ? (lang === 'fr' ? 'Gratuite' : 'مجاني') : formatPrice(shipping)}
                 </span>
               </div>
-              {shipping > 0 && subtotal < 200 && (
-                <p className="text-xs text-[var(--gold-muted)]">
-                  {lang === 'fr' ? `Livraison offerte dès ${formatPrice(200)}` : `التوصيل مجاني للطلبات فوق ${formatPrice(200)}`}
-                </p>
-              )}
               <div className="flex justify-between pt-2 border-t border-[var(--border)]">
                 <span className="font-display">{lang === 'fr' ? 'Total' : 'المجموع'}</span>
                 <span className="font-mono text-lg text-[var(--gold)]">{formatPrice(grandTotal)}</span>

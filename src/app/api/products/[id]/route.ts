@@ -44,7 +44,10 @@ export async function PUT(
     }
   }
 
-  const updateData: Record<string, unknown> = { ...data }
+  const updateData: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(data)) {
+    if (value !== undefined) updateData[key] = value
+  }
 
   const product = await prisma.product.update({
     where: { id },

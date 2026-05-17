@@ -14,8 +14,20 @@ const DEFAULT_SETTINGS = {
   description: 'Parfums et bijoux de qualité à prix abordables au Maroc',
   whatsapp: '+212600000000',
   instagram: '@rawaa.ma',
+  tiktok: '',
+  facebook: '',
   freeShippingThreshold: 200,
   shippingFee: 25,
+  seoTitle: 'Rawaa روعة — Parfums & Bijoux',
+  seoDescription: 'Parfums et bijoux de qualité à prix abordables au Maroc',
+  seoKeywords: 'parfum maroc, bijoux maroc, عطور, مجوهرات, rawaa',
+  heroTitle: 'Rawaa',
+  heroTitleAr: 'روعة',
+  heroSubtitle: 'Parfums & Bijoux',
+  heroSubtitleAr: 'عطور ومجوهرات',
+  heroCta1: 'Shop Parfums',
+  heroCta2: 'Shop Bijoux',
+  promoText: 'Livraison gratuite dès 200 DH · التوصيل المجاني من 200 درهم',
 }
 
 export async function GET() {

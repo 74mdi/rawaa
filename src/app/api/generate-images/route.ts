@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { parseImages } from '@/lib/utils'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 
@@ -47,7 +48,7 @@ function generatePerfumeSVG(color: typeof PERFUME_COLORS[0], index: number): str
     <rect x="60" y="60" width="200" height="280" rx="8" fill="none" stroke="${color.accent}" stroke-width="0.3" opacity="0.2"/>
     <circle cx="160" cy="120" r="80" fill="url(#glow)"/>
     ${shapes}
-    <text x="160" y="360" text-anchor="middle" fill="${color.accent}" font-family="serif" font-size="14" letter-spacing="3" opacity="0.6">RA AWA</text>
+    <text x="160" y="360" text-anchor="middle" fill="${color.accent}" font-family="serif" font-size="14" letter-spacing="3" opacity="0.6">RAWAA</text>
   </svg>`
 }
 
@@ -74,7 +75,7 @@ function generateJewelrySVG(color: typeof JEWELRY_COLORS[0], index: number): str
     <rect width="320" height="400" rx="20" fill="url(#bg)"/>
     <circle cx="160" cy="200" r="120" fill="url(#glow)"/>
     ${gems}
-    <text x="160" y="370" text-anchor="middle" fill="${color.accent}" font-family="serif" font-size="12" letter-spacing="4" opacity="0.4">RA AWA</text>
+    <text x="160" y="370" text-anchor="middle" fill="${color.accent}" font-family="serif" font-size="12" letter-spacing="4" opacity="0.4">RAWAA</text>
   </svg>`
 }
 
@@ -95,7 +96,7 @@ export async function POST() {
     let generatedCount = 0
 
     for (const product of products) {
-      const currentImages: string[] = JSON.parse(product.images || '[]')
+      const currentImages = parseImages(product.images)
       if (currentImages.length >= 2) continue
 
       const newImages: string[] = [...currentImages]
@@ -117,7 +118,7 @@ export async function POST() {
       if (newImages.length > currentImages.length) {
         await prisma.product.update({
           where: { id: product.id },
-          data: { images: JSON.stringify(newImages) },
+          data: { images: newImages },
         })
         generatedCount++
       }

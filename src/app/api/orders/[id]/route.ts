@@ -34,9 +34,13 @@ export async function PUT(
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const data = await request.json()
+  const updateFields: Record<string, unknown> = {}
+  if (data.status !== undefined) updateFields.status = data.status
+  if (data.notes !== undefined) updateFields.notes = data.notes
+
   const order = await prisma.order.update({
     where: { id },
-    data: { status: data.status, notes: data.notes },
+    data: updateFields,
   })
   return NextResponse.json(order)
 }

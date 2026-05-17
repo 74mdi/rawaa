@@ -8,30 +8,40 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('rawaa_admin_token')
   const { pathname } = request.nextUrl
 
-  // Protected admin pages
   if (pathname.startsWith(ADMIN_PREFIX) && !pathname.startsWith('/admin/login') && !token) {
     const loginUrl = new URL('/admin/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Protected API routes (admin-only)
   if (pathname.startsWith(`${API_PREFIX}/admin`)) {
     if (pathname === `${API_PREFIX}/admin/auth` && request.method === 'POST') {
-      return NextResponse.next()
+      const response = NextResponse.next()
+      addSecurityHeaders(response)
+      return response
     }
     if (!token) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
   }
 
-  // Security headers
   const response = NextResponse.next()
+  addSecurityHeaders(response)
+  return response
+}
+
+function addSecurityHeaders(response: NextResponse) {
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-
-  return response
+  response.headers.set('X-XSS-Protection', '0')
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https:; media-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+  )
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
 }
 
 export const config = {

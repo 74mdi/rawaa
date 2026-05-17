@@ -11,6 +11,10 @@ type LogEntry = {
   timestamp: string
 }
 
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 export async function addLog(action: string, details = '', ip = '') {
   try {
     await mkdir(path.dirname(LOG_FILE), { recursive: true })
@@ -21,7 +25,7 @@ export async function addLog(action: string, details = '', ip = '') {
     } catch { /* no existing file */ }
 
     logs.unshift({
-      id: crypto.randomUUID(),
+      id: generateId(),
       action,
       details,
       ip,

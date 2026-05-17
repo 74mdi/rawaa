@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: firstError.message }, { status: 400 })
   }
 
-  const { customerName, phone, city, address, notes, items } = parsed.data
+  const { customerName, phone, city, address, notes, items, discountCode } = data
 
   try {
     const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -90,7 +90,34 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      const shippingFee = calcShipping(total)
+      let discountAmount = 0
+      if (discountCode) {
+        const code = await tx.discountCode.findFirst({
+          where: {
+            code: discountCode.toUpperCase(),
+            active: true,
+            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+          },
+        })
+        if (code) {
+          if (!code.maxUses || code.usedCount < code.maxUses) {
+            if (!code.minOrder || total >= code.minOrder) {
+              if (code.type === 'PERCENTAGE') {
+                discountAmount = Math.round(total * (code.value / 100))
+              } else {
+                discountAmount = Math.min(code.value, total)
+              }
+              await tx.discountCode.update({
+                where: { id: code.id },
+                data: { usedCount: { increment: 1 } },
+              })
+            }
+          }
+        }
+      }
+
+      const afterDiscount = Math.max(0, total - discountAmount)
+      const shippingFee = calcShipping(afterDiscount)
 
       return tx.order.create({
         data: {
@@ -99,7 +126,7 @@ export async function POST(request: NextRequest) {
           city,
           address,
           notes: notes || null,
-          total: total + shippingFee,
+          total: afterDiscount + shippingFee,
           items: { create: orderItemsData },
         },
         include: { items: true },

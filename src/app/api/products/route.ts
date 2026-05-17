@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
   const product = await prisma.product.create({
     data: {
       ...parsed.data,
-      images: parsed.data.images,
-      tags: parsed.data.tags,
+      images: parsed.data.images ?? [],
+      tags: parsed.data.tags ?? [],
       subcategory: parsed.data.subcategory || null,
       originalPrice: parsed.data.originalPrice || null,
     },

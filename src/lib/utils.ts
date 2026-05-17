@@ -58,7 +58,7 @@ export function parseTags(tags: string | string[]): string[] {
 export function transformProduct(product: Record<string, unknown>) {
   return {
     ...product,
-    images: parseImages(product.images as string),
-    tags: parseTags(product.tags as string),
+    images: parseImages(product.images as string | string[]),
+    tags: parseTags(product.tags as string | string[]),
   }
 }

@@ -2,8 +2,13 @@ import { cookies } from 'next/headers'
 import { jwtVerify, SignJWT } from 'jose'
 import bcrypt from 'bcryptjs'
 
+const JWT_SECRET_VALUE = process.env.JWT_SECRET
+if (!JWT_SECRET_VALUE || JWT_SECRET_VALUE.length < 32) {
+  console.error('WARNING: JWT_SECRET is not set or too short. Set a strong secret in production.')
+}
+
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'fallback-secret-key-change-in-production'
+  JWT_SECRET_VALUE || 'fallback-secret-key-change-in-production-min-32-chars'
 )
 
 export async function createToken(email: string): Promise<string> {
