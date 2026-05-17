@@ -23,7 +23,12 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ action: 'login', email, password, rememberMe }),
       })
 
-      const data = await res.json()
+      let data: { error?: string } = {}
+      try {
+        data = await res.json()
+      } catch {
+        throw new Error('Erreur de connexion au serveur')
+      }
 
       if (!res.ok) {
         throw new Error(data.error || 'Erreur de connexion')
