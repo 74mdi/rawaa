@@ -23,7 +23,7 @@ export default function AdminDiscountCodesPage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<DiscountCode | null>(null)
   const [form, setForm] = useState({
-    code: '', type: 'PERCENTAGE' as const, value: '', minOrder: '', maxUses: '', active: true, expiresAt: '',
+    code: '', type: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED', value: '', minOrder: '', maxUses: '', active: true, expiresAt: '',
   })
   const { toast } = useToast()
 
@@ -41,7 +41,7 @@ export default function AdminDiscountCodesPage() {
     if (c) {
       setEditing(c)
       setForm({
-        code: c.code, type: c.type, value: c.value.toString(),
+        code: c.code, type: c.type as 'PERCENTAGE' | 'FIXED', value: c.value.toString(),
         minOrder: c.minOrder?.toString() || '', maxUses: c.maxUses?.toString() || '',
         active: c.active, expiresAt: c.expiresAt?.slice(0, 16) || '',
       })
