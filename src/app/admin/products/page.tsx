@@ -63,7 +63,7 @@ export default function AdminProductsPage() {
     if (!confirm('Supprimer ce produit définitivement ?')) return
     await fetch(`/api/products/${id}`, { method: 'DELETE' })
     setProducts(prev => prev.filter(p => p.id !== id))
-    toast('Produit supprimé', 'error')
+    toast('Produit supprimé', 'success')
   }
 
   const duplicateProduct = async (product: AdminProduct) => {
@@ -103,7 +103,7 @@ export default function AdminProductsPage() {
     }
     setProducts(prev => prev.filter(p => !selectedIds.has(p.id)))
     setSelectedIds(new Set())
-    toast(`${selectedIds.size} produits supprimés`, 'error')
+    toast(`${selectedIds.size} produits supprimés`, 'success')
   }
 
   const toggleSelect = (id: string) => {
@@ -131,35 +131,40 @@ export default function AdminProductsPage() {
   })
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <h1 className="font-display text-2xl text-gradient">Produits</h1>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl text-gradient">Produits</h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">{products.length} produit{products.length !== 1 ? 's' : ''}</p>
+        </div>
         <Link
           href="/admin/products/new"
-          className="px-4 py-2 rounded-button bg-[var(--gold)] text-[var(--bg-primary)] text-sm font-medium hover:opacity-90 transition-all inline-flex items-center gap-2"
+          className="px-4 py-2.5 rounded-lg bg-[var(--gold)] text-[var(--bg-primary)] text-sm font-medium hover:opacity-90 transition-all inline-flex items-center gap-2 self-start"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
           Nouveau produit
         </Link>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-3 mb-6">
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
           <input
             type="text"
-            placeholder="Rechercher un produit..."
+            placeholder="Rechercher..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-button pl-10 pr-4 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)]"
+            className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)]"
           />
         </div>
         <select
           value={categoryFilter}
           onChange={e => setCategoryFilter(e.target.value)}
-          className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-button px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]"
+          className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg px-3 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]"
         >
           <option value="">Toutes catégories</option>
           <option value="PERFUME">Parfums</option>
@@ -168,7 +173,7 @@ export default function AdminProductsPage() {
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value as 'name' | 'price' | 'stock' | 'created')}
-          className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-button px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]"
+          className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg px-3 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]"
         >
           <option value="created">Plus récents</option>
           <option value="name">Nom A-Z</option>
@@ -177,13 +182,14 @@ export default function AdminProductsPage() {
         </select>
       </div>
 
+      {/* Batch actions */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-[var(--gold)]/10 rounded-xl border border-[var(--gold)]/20">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-[var(--gold)]/10 rounded-lg border border-[var(--gold)]/20">
           <span className="text-sm text-[var(--gold)] font-medium">{selectedIds.size} sélectionné(s)</span>
-          <button onClick={batchToggle} className="px-3 py-1 rounded-button bg-[var(--gold)] text-[var(--bg-primary)] text-xs">
+          <button onClick={batchToggle} className="px-3 py-1.5 rounded-lg bg-[var(--gold)] text-[var(--bg-primary)] text-xs font-medium">
             Activer/Désactiver
           </button>
-          <button onClick={batchDelete} className="px-3 py-1 rounded-button bg-[var(--error)] text-white text-xs">
+          <button onClick={batchDelete} className="px-3 py-1.5 rounded-lg bg-[var(--error)] text-white text-xs font-medium">
             Supprimer
           </button>
           <button onClick={() => setSelectedIds(new Set())} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]">
@@ -192,18 +198,101 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 bg-[var(--bg-surface)] rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] overflow-hidden">
-          <div className="overflow-x-auto">
+      {/* Mobile cards */}
+      <div className="block lg:hidden space-y-3">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-24 bg-[var(--bg-surface)] rounded-xl animate-pulse" />
+          ))
+        ) : sortedProducts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-sm text-[var(--text-muted)] mb-3">Aucun produit trouvé</p>
+            <Link href="/admin/products/new" className="text-sm text-[var(--gold)] hover:underline">Créer un produit</Link>
+          </div>
+        ) : (
+          sortedProducts.map(product => (
+            <div key={product.id} className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] p-4">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(product.id)}
+                  onChange={() => toggleSelect(product.id)}
+                  className="accent-[var(--gold)] mt-1"
+                />
+                <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-[var(--bg-primary)] flex-shrink-0">
+                  {product.images[0] && (
+                    <Image src={product.images[0]} alt="" fill className="object-cover" sizes="56px" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Link href={`/admin/products/${product.id}`} className="text-sm font-medium hover:text-[var(--gold)] transition-colors truncate block">
+                    {product.name}
+                  </Link>
+                  <p className="text-xs text-[var(--text-muted)] font-arabic truncate" dir="rtl">{product.nameAr}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={cn(
+                      "text-xs px-2 py-0.5 rounded-full",
+                      product.category === 'PERFUME' ? "bg-[var(--gold)]/10 text-[var(--gold)]" : "bg-[var(--rose)]/10 text-[var(--rose)]"
+                    )}>
+                      {product.category === 'PERFUME' ? 'Parfum' : 'Bijou'}
+                    </span>
+                    <span className={cn(
+                      "text-xs px-2 py-0.5 rounded-full font-mono",
+                      product.stock === 0 ? "bg-[var(--error)]/10 text-[var(--error)]" :
+                      product.stock < 5 ? "bg-amber-500/10 text-amber-500" : "text-[var(--text-secondary)]"
+                    )}>
+                      {product.stock}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-mono text-sm text-[var(--gold)]">{formatPrice(product.price)}</p>
+                  <button
+                    onClick={() => toggleActive(product.id, product.active)}
+                    className={cn(
+                      "w-10 h-5 rounded-full transition-colors relative mt-1 ml-auto",
+                      product.active ? 'bg-[var(--success)]' : 'bg-[var(--border)]'
+                    )}
+                  >
+                    <span className={cn(
+                      "absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform",
+                      product.active ? 'translate-x-5' : 'translate-x-0.5'
+                    )} />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-[var(--border)]">
+                <Link href={`/shop/${product.slug || product.id}`} target="_blank" className="p-2 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)]" title="Voir">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </Link>
+                <Link href={`/admin/products/${product.id}`} className="p-2 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)]" title="Modifier">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </Link>
+                <button onClick={() => duplicateProduct(product)} className="p-2 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)]" title="Dupliquer">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
+                <button onClick={() => deleteProduct(product.id)} className="p-2 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--error)]" title="Supprimer">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden lg:block bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] overflow-hidden">
+        {loading ? (
+          <div className="space-y-3 p-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-16 bg-[var(--bg-surface)] rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--border)]">
+                <tr className="border-b border-[var(--border)] bg-[var(--bg-surface)]/50">
                   <th className="p-4 w-10">
                     <input
                       type="checkbox"
@@ -212,18 +301,18 @@ export default function AdminProductsPage() {
                       className="accent-[var(--gold)]"
                     />
                   </th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal">Produit</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal hidden md:table-cell">Catégorie</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal">Prix</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal">Stock</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal hidden lg:table-cell">Featured</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal hidden md:table-cell">Actif</th>
-                  <th className="text-right p-4 text-[var(--text-muted)] font-normal">Actions</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Produit</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Catégorie</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Prix</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Stock</th>
+                  <th className="text-center p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Featured</th>
+                  <th className="text-center p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Actif</th>
+                  <th className="text-right p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedProducts.map(product => (
-                  <tr key={product.id} className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-surface)]/50 transition-colors">
+                  <tr key={product.id} className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-surface)]/30 transition-colors">
                     <td className="p-4">
                       <input
                         type="checkbox"
@@ -243,13 +332,13 @@ export default function AdminProductsPage() {
                           <Link href={`/admin/products/${product.id}`} className="text-sm hover:text-[var(--gold)] transition-colors truncate block">
                             {product.name}
                           </Link>
-                          <span className="text-xs text-[var(--text-muted)] font-arabic" dir="rtl">{product.nameAr}</span>
+                          <span className="text-xs text-[var(--text-muted)] font-arabic truncate block" dir="rtl">{product.nameAr}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 hidden md:table-cell">
+                    <td className="p-4">
                       <span className={cn(
-                        "text-xs px-2 py-0.5 rounded-full",
+                        "text-xs px-2 py-1 rounded-full",
                         product.category === 'PERFUME' ? "bg-[var(--gold)]/10 text-[var(--gold)]" : "bg-[var(--rose)]/10 text-[var(--rose)]"
                       )}>
                         {product.category === 'PERFUME' ? 'Parfum' : 'Bijou'}
@@ -258,26 +347,26 @@ export default function AdminProductsPage() {
                     <td className="p-4 font-mono">{formatPrice(product.price)}</td>
                     <td className="p-4">
                       <span className={cn(
-                        "font-mono text-xs px-2 py-0.5 rounded-full",
+                        "font-mono text-xs px-2 py-1 rounded-full",
                         product.stock === 0 ? "bg-[var(--error)]/10 text-[var(--error)]" :
-                        product.stock < 5 ? "bg-[var(--gold)]/10 text-[var(--gold)]" :
+                        product.stock < 5 ? "bg-amber-500/10 text-amber-500" :
                         "text-[var(--text-secondary)]"
                       )}>
                         {product.stock}
                       </span>
                     </td>
-                    <td className="p-4 hidden lg:table-cell">
+                    <td className="p-4 text-center">
                       {product.featured && (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--gold)" stroke="var(--gold)" strokeWidth="1">
                           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                         </svg>
                       )}
                     </td>
-                    <td className="p-4 hidden md:table-cell">
+                    <td className="p-4 text-center">
                       <button
                         onClick={() => toggleActive(product.id, product.active)}
                         className={cn(
-                          "w-10 h-5 rounded-full transition-colors relative",
+                          "w-10 h-5 rounded-full transition-colors relative inline-block",
                           product.active ? 'bg-[var(--success)]' : 'bg-[var(--border)]'
                         )}
                       >
@@ -289,33 +378,16 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Link
-                          href={`/shop/${product.slug || product.id}`}
-                          target="_blank"
-                          className="p-1.5 rounded-button hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)]"
-                          title="Voir sur le site"
-                        >
+                        <Link href={`/shop/${product.slug || product.id}`} target="_blank" className="p-1.5 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors" title="Voir">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                         </Link>
-                        <Link
-                          href={`/admin/products/${product.id}`}
-                          className="p-1.5 rounded-button hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)]"
-                          title="Modifier"
-                        >
+                        <Link href={`/admin/products/${product.id}`} className="p-1.5 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors" title="Modifier">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </Link>
-                        <button
-                          onClick={() => duplicateProduct(product)}
-                          className="p-1.5 rounded-button hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)]"
-                          title="Dupliquer"
-                        >
+                        <button onClick={() => duplicateProduct(product)} className="p-1.5 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors" title="Dupliquer">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                         </button>
-                        <button
-                          onClick={() => deleteProduct(product.id)}
-                          className="p-1.5 rounded-button hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--error)]"
-                          title="Supprimer"
-                        >
+                        <button onClick={() => deleteProduct(product.id)} className="p-1.5 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--error)] transition-colors" title="Supprimer">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                         </button>
                       </div>
@@ -324,15 +396,15 @@ export default function AdminProductsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-          {sortedProducts.length === 0 && (
-            <div className="p-12 text-center">
-              <p className="text-sm text-[var(--text-muted)] mb-4">Aucun produit trouvé</p>
-              <Link href="/admin/products/new" className="text-sm text-[var(--gold)] hover:underline">Créer un produit</Link>
-            </div>
-          )}
-        </div>
-      )}
+            {sortedProducts.length === 0 && (
+              <div className="p-16 text-center">
+                <p className="text-sm text-[var(--text-muted)] mb-3">Aucun produit trouvé</p>
+                <Link href="/admin/products/new" className="text-sm text-[var(--gold)] hover:underline">Créer un produit</Link>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

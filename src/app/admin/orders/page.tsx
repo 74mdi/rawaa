@@ -70,11 +70,12 @@ export default function AdminOrdersPage() {
   const pendingCount = orders.filter(o => o.status === 'PENDING').length
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl text-gradient">Commandes</h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">{orders.length} commandes</p>
+          <p className="text-sm text-[var(--text-muted)] mt-1">{orders.length} commande{orders.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
@@ -82,13 +83,13 @@ export default function AdminOrdersPage() {
               type="checkbox"
               checked={autoRefresh}
               onChange={e => setAutoRefresh(e.target.checked)}
-              className="accent-[var(--gold)]"
+              className="accent-[var(--gold)] w-4 h-4"
             />
             Auto-refresh
           </label>
           <button
             onClick={exportCSV}
-            className="px-3 py-2 rounded-button border border-[var(--border)] text-xs text-[var(--text-secondary)] hover:border-[var(--gold)] transition-all flex items-center gap-1"
+            className="px-3 py-2 rounded-lg border border-[var(--border)] text-xs text-[var(--text-secondary)] hover:border-[var(--gold)] transition-all flex items-center gap-1"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -98,27 +99,27 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-3 mb-6">
-        <div className="flex-1 relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-          </svg>
-          <input
-            type="text"
-            placeholder="Rechercher par nom, téléphone, N° commande..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-button pl-10 pr-4 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)]"
-          />
-        </div>
+      {/* Search */}
+      <div className="relative">
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Rechercher par nom, téléphone, N° commande..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--gold)]"
+        />
       </div>
 
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      {/* Status filters */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         <button
           onClick={() => setStatusFilter('')}
           className={cn(
-            "px-4 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1",
-            !statusFilter ? "bg-[var(--gold)] text-[var(--bg-primary)]" : "bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            "px-4 py-2 rounded-lg text-xs whitespace-nowrap transition-colors flex items-center gap-1",
+            !statusFilter ? "bg-[var(--gold)] text-[var(--bg-primary)] font-medium" : "bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           )}
         >
           Tous <span className="opacity-60">({orders.length})</span>
@@ -128,8 +129,8 @@ export default function AdminOrdersPage() {
             key={s.value}
             onClick={() => setStatusFilter(s.value)}
             className={cn(
-              "px-4 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1",
-              statusFilter === s.value ? "bg-[var(--gold)] text-[var(--bg-primary)]" : "bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              "px-4 py-2 rounded-lg text-xs whitespace-nowrap transition-colors flex items-center gap-1",
+              statusFilter === s.value ? "bg-[var(--gold)] text-[var(--bg-primary)] font-medium" : "bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             )}
           >
             {s.label}
@@ -138,63 +139,97 @@ export default function AdminOrdersPage() {
         ))}
       </div>
 
+      {/* Pending alert */}
       {pendingCount > 0 && (
-        <div className="mb-4 px-4 py-3 bg-[var(--gold)]/10 rounded-xl border border-[var(--gold)]/20 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[var(--gold)] animate-pulse" />
-          <span className="text-sm text-[var(--gold)]">{pendingCount} commande(s) en attente</span>
+        <div className="px-4 py-3 bg-amber-500/10 rounded-lg border border-amber-500/20 flex items-center gap-3">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+          <span className="text-sm text-amber-500 flex-1">{pendingCount} commande{pendingCount > 1 ? 's' : ''} en attente</span>
+          <Link href="/admin/orders?status=PENDING" className="text-sm text-amber-500 hover:underline font-medium">
+            Voir
+          </Link>
         </div>
       )}
 
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 bg-[var(--bg-surface)] rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] overflow-hidden">
-          <div className="overflow-x-auto">
+      {/* Mobile cards */}
+      <div className="block lg:hidden space-y-3">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-24 bg-[var(--bg-surface)] rounded-xl animate-pulse" />
+          ))
+        ) : filteredOrders.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-sm text-[var(--text-muted)]">{search ? 'Aucune commande trouvée' : 'Aucune commande'}</p>
+          </div>
+        ) : (
+          filteredOrders.map(order => (
+            <Link key={order.id} href={`/admin/orders/${order.id}`} className="block bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] p-4 hover:border-[var(--gold)]/30 transition-all">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <p className="font-mono text-sm font-medium">{order.orderNumber.slice(0, 8).toUpperCase()}</p>
+                  <p className="text-sm text-[var(--text-secondary)] mt-0.5">{order.customerName}</p>
+                </div>
+                <span className={cn("text-xs font-medium px-2 py-1 rounded-full", statusColor(order.status))}>
+                  {statusLabel(order.status)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                <div className="flex gap-3">
+                  <span>{order.phone}</span>
+                  <span>{order.city}</span>
+                </div>
+                <span>{formatDate(order.createdAt)}</span>
+              </div>
+              <p className="font-mono text-sm text-[var(--gold)] mt-2">{formatPrice(order.total)}</p>
+            </Link>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden lg:block bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] overflow-hidden">
+        {loading ? (
+          <div className="space-y-3 p-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-16 bg-[var(--bg-surface)] rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--border)]">
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal">#</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal">Client</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal hidden md:table-cell">Téléphone</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal hidden md:table-cell">Ville</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal">Total</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal">Statut</th>
-                  <th className="text-left p-4 text-[var(--text-muted)] font-normal hidden md:table-cell">Date</th>
-                  <th className="text-right p-4 text-[var(--text-muted)] font-normal">Action</th>
+                <tr className="border-b border-[var(--border)] bg-[var(--bg-surface)]/50">
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">#</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Client</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Téléphone</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Ville</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Total</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Statut</th>
+                  <th className="text-left p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Date</th>
+                  <th className="text-right p-4 text-[var(--text-muted)] font-normal text-xs uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map(order => (
-                  <tr key={order.id} className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-surface)]/50 transition-colors">
+                  <tr key={order.id} className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--bg-surface)]/30 transition-colors">
                     <td className="p-4 font-mono text-xs">{order.orderNumber.slice(0, 8).toUpperCase()}</td>
                     <td className="p-4">
-                      <div>
-                        <p className="text-sm">{order.customerName}</p>
-                        <p className="text-xs text-[var(--text-muted)] md:hidden">{order.phone} · {order.city}</p>
-                      </div>
+                      <p className="text-sm font-medium">{order.customerName}</p>
                     </td>
-                    <td className="p-4 hidden md:table-cell text-[var(--text-secondary)]">{order.phone}</td>
-                    <td className="p-4 hidden md:table-cell text-[var(--text-secondary)]">{order.city}</td>
-                    <td className="p-4 font-mono">{formatPrice(order.total)}</td>
+                    <td className="p-4 text-[var(--text-secondary)] font-mono text-xs">{order.phone}</td>
+                    <td className="p-4 text-[var(--text-secondary)]">{order.city}</td>
+                    <td className="p-4 font-mono text-[var(--gold)]">{formatPrice(order.total)}</td>
                     <td className="p-4">
-                      <span className={cn("text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--bg-surface)]", statusColor(order.status))}>
+                      <span className={cn("text-xs font-medium px-2 py-1 rounded-full", statusColor(order.status))}>
                         {statusLabel(order.status)}
                       </span>
                     </td>
-                    <td className="p-4 hidden md:table-cell text-[var(--text-muted)] text-xs">
+                    <td className="p-4 text-[var(--text-muted)] text-xs">
                       <span title={new Date(order.createdAt).toLocaleString('fr-FR')}>
                         {formatDate(order.createdAt)}
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <Link
-                        href={`/admin/orders/${order.id}`}
-                        className="text-xs text-[var(--gold)] hover:underline"
-                      >
+                      <Link href={`/admin/orders/${order.id}`} className="text-xs text-[var(--gold)] hover:underline font-medium">
                         Détails
                       </Link>
                     </td>
@@ -202,16 +237,16 @@ export default function AdminOrdersPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-          {filteredOrders.length === 0 && (
-            <div className="p-12 text-center">
-              <p className="text-sm text-[var(--text-muted)]">
-                {search ? 'Aucune commande trouvée' : 'Aucune commande'}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+            {filteredOrders.length === 0 && (
+              <div className="p-16 text-center">
+                <p className="text-sm text-[var(--text-muted)]">
+                  {search ? 'Aucune commande trouvée' : 'Aucune commande'}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

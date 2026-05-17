@@ -22,6 +22,7 @@ const DEFAULTS: Testimonial[] = [
 export default function AdminTestimonialsPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>(DEFAULTS)
   const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Testimonial | null>(null)
   const [form, setForm] = useState({ name: '', text: '', textAr: '', rating: 5, active: true })
   const { toast } = useToast()
@@ -37,14 +38,21 @@ export default function AdminTestimonialsPage() {
 
   useEffect(() => { fetchTestimonials() }, [fetchTestimonials])
 
-  const openEdit = (t?: Testimonial) => {
-    if (t) {
-      setEditing(t)
-      setForm({ name: t.name, text: t.text, textAr: t.textAr, rating: t.rating, active: t.active })
-    } else {
-      setEditing(null)
-      setForm({ name: '', text: '', textAr: '', rating: 5, active: true })
-    }
+  const openNew = () => {
+    setEditing(null)
+    setShowForm(true)
+    setForm({ name: '', text: '', textAr: '', rating: 5, active: true })
+  }
+
+  const openEdit = (t: Testimonial) => {
+    setEditing(t)
+    setShowForm(true)
+    setForm({ name: t.name, text: t.text, textAr: t.textAr, rating: t.rating, active: t.active })
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditing(null)
   }
 
   const save = async () => {
@@ -63,7 +71,7 @@ export default function AdminTestimonialsPage() {
       })
       if (!res.ok) throw new Error('Failed')
       toast(editing ? 'Témoignage modifié' : 'Témoignage créé', 'success')
-      setEditing(null)
+      closeForm()
       fetchTestimonials()
     } catch {
       toast('Erreur lors de la sauvegarde', 'error')
@@ -85,7 +93,7 @@ export default function AdminTestimonialsPage() {
     if (!confirm('Supprimer ce témoignage ?')) return
     try {
       await fetch(`/api/testimonials?id=${id}`, { method: 'DELETE' })
-      toast('Témoignage supprimé', 'error')
+      toast('Témoignage supprimé', 'success')
       fetchTestimonials()
     } catch { /* silent */ }
   }
@@ -93,99 +101,113 @@ export default function AdminTestimonialsPage() {
   if (loading) return <div className="animate-pulse h-96 bg-[var(--bg-surface)] rounded-xl" />
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <h1 className="font-display text-2xl text-gradient">Témoignages</h1>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl text-gradient">Témoignages</h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">{testimonials.length} témoignage{testimonials.length !== 1 ? 's' : ''}</p>
+        </div>
         <button
-          onClick={() => openEdit()}
-          className="px-4 py-2 rounded-button bg-[var(--gold)] text-[var(--bg-primary)] text-sm font-medium hover:opacity-90 transition-all inline-flex items-center gap-2"
+          onClick={openNew}
+          className="px-4 py-2.5 rounded-lg bg-[var(--gold)] text-[var(--bg-primary)] text-sm font-medium hover:opacity-90 transition-all inline-flex items-center gap-2 self-start"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
           Nouveau témoignage
         </button>
       </div>
 
-      {editing !== null && (
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--gold)] mb-6 space-y-4">
-          <h2 className="font-display text-lg">{editing ? 'Modifier' : 'Nouveau'} témoignage</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-[var(--text-secondary)] mb-1">Nom</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-button px-3 py-2 text-sm focus:outline-none focus:border-[var(--gold)]"
-                placeholder="Fatima Z."
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-[var(--text-secondary)] mb-1">Note</label>
-              <select
-                value={form.rating}
-                onChange={e => setForm(f => ({ ...f, rating: Number(e.target.value) }))}
-                className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-button px-3 py-2 text-sm focus:outline-none focus:border-[var(--gold)]"
-              >
-                {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} étoiles</option>)}
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-1">Texte (FR)</label>
-            <textarea
-              value={form.text}
-              onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
-              rows={2}
-              className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-button px-3 py-2 text-sm focus:outline-none focus:border-[var(--gold)] resize-none"
-              placeholder="Parfum magnifique..."
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--text-secondary)] mb-1">Texte (AR)</label>
-            <textarea
-              value={form.textAr}
-              onChange={e => setForm(f => ({ ...f, textAr: e.target.value }))}
-              rows={2}
-              dir="rtl"
-              className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-button px-3 py-2 text-sm focus:outline-none focus:border-[var(--gold)] resize-none rtl"
-              placeholder="عطر رائع..."
-            />
-          </div>
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.active}
-                onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
-                className="accent-[var(--gold)]"
-              />
-              Actif
-            </label>
-            <div className="flex gap-2">
-              <button onClick={save} className="px-4 py-2 rounded-button bg-[var(--gold)] text-[var(--bg-primary)] text-sm">
-                {editing ? 'Modifier' : 'Créer'}
+      {/* Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={closeForm}>
+          <div className="w-full max-w-lg bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+              <h2 className="font-display text-lg">{editing ? 'Modifier' : 'Nouveau'} témoignage</h2>
+              <button onClick={closeForm} className="p-1 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-muted)]">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
-              <button onClick={() => setEditing(null)} className="px-4 py-2 rounded-button border border-[var(--border)] text-sm text-[var(--text-secondary)]">
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1.5">Nom</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--gold)]"
+                    placeholder="Fatima Z."
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--text-secondary)] mb-1.5">Note</label>
+                  <select
+                    value={form.rating}
+                    onChange={e => setForm(f => ({ ...f, rating: Number(e.target.value) }))}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--gold)]"
+                  >
+                    {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} étoile{n > 1 ? 's' : ''}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-1.5">Texte (FR)</label>
+                <textarea
+                  value={form.text}
+                  onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
+                  rows={3}
+                  className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--gold)] resize-none"
+                  placeholder="Parfum magnifique..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text-secondary)] mb-1.5">Texte (AR)</label>
+                <textarea
+                  value={form.textAr}
+                  onChange={e => setForm(f => ({ ...f, textAr: e.target.value }))}
+                  rows={3}
+                  dir="rtl"
+                  className="w-full bg-[var(--bg-surface)] border border-[var(--border)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--gold)] resize-none"
+                  placeholder="عطر رائع..."
+                />
+              </div>
+              <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.active}
+                  onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
+                  className="accent-[var(--gold)] w-4 h-4"
+                />
+                Actif
+              </label>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-[var(--border)]">
+              <button onClick={closeForm} className="px-4 py-2.5 rounded-lg border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:border-[var(--gold)] transition-all">
                 Annuler
+              </button>
+              <button onClick={save} className="px-4 py-2.5 rounded-lg bg-[var(--gold)] text-[var(--bg-primary)] text-sm font-medium hover:opacity-90 transition-all">
+                {editing ? 'Modifier' : 'Créer'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="space-y-4">
+      {/* Testimonials list */}
+      <div className="space-y-3">
         {testimonials.map(t => (
           <div key={t.id} className={cn(
-            "bg-[var(--bg-secondary)] rounded-xl p-6 border transition-all",
-            t.active ? "border-[var(--border)]" : "border-[var(--border)] opacity-60"
+            "bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] p-4 transition-all",
+            !t.active && "opacity-60"
           )}>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
                   <h3 className="font-display text-sm">{t.name}</h3>
                   <div className="flex gap-0.5">
                     {Array.from({ length: t.rating }).map((_, i) => (
-                      <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="var(--gold)" stroke="var(--gold)" strokeWidth="1">
+                      <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill="var(--gold)" stroke="var(--gold)" strokeWidth="1">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                       </svg>
                     ))}
@@ -198,9 +220,9 @@ export default function AdminTestimonialsPage() {
                   </span>
                 </div>
                 <p className="text-sm text-[var(--text-secondary)]">{t.text}</p>
-                <p className="text-sm text-[var(--text-muted)] font-arabic mt-1" dir="rtl">{t.textAr}</p>
+                {t.textAr && <p className="text-sm text-[var(--text-muted)] mt-1 font-arabic" dir="rtl">{t.textAr}</p>}
               </div>
-              <div className="flex items-center gap-2 ml-4">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <button
                   onClick={() => toggleActive(t)}
                   className={cn(
@@ -213,10 +235,10 @@ export default function AdminTestimonialsPage() {
                     t.active ? 'translate-x-5' : 'translate-x-0.5'
                   )} />
                 </button>
-                <button onClick={() => openEdit(t)} className="p-1.5 rounded-button hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)]">
+                <button onClick={() => openEdit(t)} className="p-1.5 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button onClick={() => remove(t.id)} className="p-1.5 rounded-button hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--error)]">
+                <button onClick={() => remove(t.id)} className="p-1.5 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--error)] transition-colors">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                 </button>
               </div>
